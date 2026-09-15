@@ -1,0 +1,203 @@
+---
+title: "05. Mudança climática nos locais de ocorrência"
+author: "Jonathan David Castillo"
+---
+
+```{r setup, include=FALSE}
+source("R/comum.R", encoding="UTF-8")
+source(caminho("R","etapa05.R"), encoding="UTF-8")
+library(ggplot2)
+library(dplyr)
+library(sf)
+z <- calcular05()
+r <- z$resumo
+d <- z$dados
+```
+
+# Pergunta e continuidade da análise
+
+As localidades registradas para seis espécies da Mata Atlântica permanecem na mesma classe de Köppen–Geiger sob o clima projetado para o final do século?
+
+A análise parte das ocorrências que receberam o bioma **Mata Atlântica na etapa 3**. A etapa 4 descreve sua base temporal e os contrastes de documentação entre biomas; aqui, o foco passa das séries de registros para o clima das localidades. Comparamos **1991–2020** e **2071–2099**, sob **SSP5-8.5**, com os mapas de Beck et al. (2023).
+
+O resultado mede a exposição dos locais documentados à mudança de classe climática. Não estima a área de distribuição das espécies, sua abundância ou sua probabilidade de extinção. O cenário representa uma trajetória específica; não é uma previsão única do clima futuro.
+
+# Origem dos dados e espécies selecionadas
+
+A matriz original da etapa 3 preservava `gbifID` e `scientificName`, mas descartava `species`. Nesta reconstrução, os nomes foram recuperados de `Br_01_clean2.csv` pelo `gbifID`, sem criar ocorrências adicionais. A nova versão da etapa 3 passa a conservar essa coluna. A cópia portátil desse recorte está em `data/ocorrencias_alvo_etapa03.rds`.
+
+
+```{r amostra}
+amostra <- d |>
+  group_by(species) |>
+  summarise(registros=n(),sem_ano=sum(is.na(year)),
+            anos=if(all(is.na(year))) "Não informado" else paste(range(year,na.rm=TRUE),collapse="–"),
+            .groups="drop")
+tab(amostra,col.names=c("Espécie","Registros","Sem ano","Intervalo de anos"))
+```
+
+Foram recuperados **`r fmt(z$n_origem)` registros**. A validação das coordenadas excluiu `r fmt(z$n_invalidas)` registros. A seleção climática não repete o filtro temporal da etapa 4: inclui os tipos de registro conservados na limpeza e admite ano ausente. Coordenadas históricas são tratadas como locais documentados, não como confirmação de ocupação atual.
+
+# Mapas climáticos e preparação espacial
+
+Os arquivos utilizados têm resolução de **30 segundos de arco** (`0,008333…°`, aproximadamente 1 km). O projeto inclui cópias integrais dos dois rasters globais de origem, sem recorte ou reamostragem. Essa escolha conserva também a referência exata da grade para coordenadas situadas nos limites das células.
+
+Antes da extração, o código verifica se os rasters têm o mesmo sistema de coordenadas, extensão e resolução. Cada ponto recebe a classe da célula correspondente, sem interpolação. Valores fora dos códigos 1–30 são tratados como ausência de informação. A legenda é lida no formato original `código: símbolo`.
+
+```{r metadados-clima}
+tab(data.frame(
+  Periodo=c("1991–2020","2071–2099"),
+  Cenario=c("Referência histórica","SSP5-8.5"),
+  Resolucao_graus=c(terra::res(z$atual)[1],terra::res(z$futuro)[1])
+), digits=7)
+```
+
+```{r codigo-preparacao, echo=FALSE, results='asis'}
+cat("<details><summary>Consultar o código completo de carga, extração e verificação</summary>\n\n```r\n",
+    paste(readLines(caminho("R","etapa05.R"),warn=FALSE,encoding="UTF-8"),collapse="\n"),
+    "\n```\n\n</details>\n",sep="")
+```
+
+# Registros com informação nos dois períodos
+
+O percentual de alteração usa como denominador apenas os registros com classe válida no presente e no futuro. Os demais permanecem na tabela de controle e no arquivo de ocorrências; não são classificados como estáveis.
+
+```{r cobertura}
+tab(r,col.names=c("Espécie","Total","Clima válido","Sem clima","Mantidos","Alterados","Alteração (%)"))
+```
+
+```{r interpretacao-cobertura, echo=FALSE, results='asis'}
+cat(sprintf("Há informação climática nos dois períodos para **%s de %s registros (%s%%)**. Os **%s registros restantes** não entram no cálculo dos percentuais.\n\n",fmt(sum(r$validos)),fmt(sum(r$total)),fmt(100*sum(r$validos)/sum(r$total),1),fmt(sum(r$sem_clima))))
+```
+
+# Exposição por espécie
+
+```{r barras, fig.cap="Proporção de registros com manutenção ou alteração da classe climática. O denominador de cada espécie aparece na tabela de cobertura; registros sem informação climática não entram nas barras."}
+barras <- bind_rows(
+  r |> transmute(species,situacao="Classe mantida",percentual=100*mantidos/ifelse(validos>0,validos,NA)),
+  r |> transmute(species,situacao="Classe alterada",percentual=100*alterados/ifelse(validos>0,validos,NA)))
+barras$species <- factor(barras$species,levels=r$species[order(r$percentual)])
+ggplot(barras,aes(species,percentual,fill=situacao)) + geom_col(width=.7) + coord_flip() +
+  scale_fill_manual(values=c("Classe mantida"="#287d79","Classe alterada"="#bf603b")) +
+  scale_y_continuous(limits=c(0,100),breaks=seq(0,100,25)) +
+  labs(x=NULL,y="Registros com clima válido (%)",fill=NULL) + tema() +
+  theme(axis.text.y=element_text(face="italic"))
+```
+
+```{r interpretacao-especies, echo=FALSE, results='asis'}
+validas <- r[is.finite(r$percentual),]
+if(nrow(validas)) {
+  maior <- validas[which.max(validas$percentual),]
+  menor <- validas[which.min(validas$percentual),]
+  cat(sprintf("A maior proporção de alteração ocorre em ***%s***: **%s%%** dos seus %s registros com clima válido. No outro extremo, ***%s*** apresenta **%s%%**, calculados sobre %s registros. A diferença indica exposição desigual entre as localidades representadas para essas espécies, sem estabelecer, por si só, uma ordem de vulnerabilidade biológica.\n\n",maior$species,fmt(maior$percentual,1),fmt(maior$validos),menor$species,fmt(menor$percentual,1),fmt(menor$validos)))
+}
+for(i in seq_len(nrow(r))) {
+  x <- r[i,]
+  cat(sprintf("- ***%s***: %s de %s registros com clima válido apresentam alteração (**%s%%**).\n",x$species,fmt(x$alterados),fmt(x$validos),fmt(x$percentual,1)))
+}
+cat("\n")
+```
+
+Uma proporção elevada aponta para a necessidade de examinar o clima das populações documentadas com maior detalhe. Entretanto, a resposta de cada espécie também depende de tolerâncias fisiológicas, dispersão, microclima e condições do habitat. A manutenção da classe tampouco implica clima constante: temperatura e precipitação podem variar sem ultrapassar os limites da classificação.
+
+# Distribuição espacial da exposição
+
+```{r mapa-exposicao, fig.height=8, fig.cap="Localidades documentadas na Mata Atlântica, classificadas pela mudança climática projetada. Pontos sobrepostos podem ocultar a repetição de registros."}
+limite <- readRDS(caminho("data","biomas_2025.rds")) |>
+  st_transform(5880) |> st_simplify(dTolerance=1000,preserveTopology=TRUE) |> st_transform(4326)
+limite <- limite[limite$name_biome=="Mata Atlântica",]
+ggplot() + geom_sf(data=limite,fill="#eef1e9",color="#879488",linewidth=.2) +
+  geom_point(data=d,aes(decimalLongitude,decimalLatitude,color=situacao),size=.65,alpha=.65) +
+  facet_wrap(~species,ncol=3) +
+  scale_color_manual(values=c("Classe mantida"="#287d79","Classe alterada"="#bf603b",
+                              "Sem informação climática"="#777777"),drop=FALSE) +
+  coord_sf(xlim=c(-56,-34),ylim=c(-34,-3),expand=FALSE) +
+  scale_x_continuous(breaks=c(-50,-40)) + scale_y_continuous(breaks=c(-30,-20,-10)) +
+  labs(x=NULL,y=NULL,color=NULL) + tema() + theme(strip.text=element_text(face="italic"))
+```
+
+O mapa permite localizar concentrações de registros expostos e reconhecer áreas pouco representadas. Uma concentração de pontos não demonstra maior densidade populacional, pois a base reúne amostragens heterogêneas. Da mesma forma, espaços sem pontos não comprovam ausência da espécie.
+
+# Quais classes substituem as atuais?
+
+```{r tabela-transicoes}
+principais <- z$transicoes |>
+  filter(classe_atual!=classe_futura) |>
+  group_by(species) |> slice_max(registros,n=3,with_ties=FALSE) |> ungroup()
+tab(principais,col.names=c("Espécie","Classe atual","Classe futura","Registros","% dos registros válidos"))
+```
+
+```{r interpretacao-transicoes, echo=FALSE, results='asis'}
+mudancas <- z$transicoes[z$transicoes$classe_atual!=z$transicoes$classe_futura,]
+if(nrow(mudancas)) {
+  principal <- mudancas[which.max(mudancas$registros),]
+  cat(sprintf("A combinação espécie–transição com mais registros é **%s → %s em *%s***, com **%s registros**. Essa frequência se refere ao conjunto amostrado e pode ser influenciada pela repetição de localidades.\n\n",principal$classe_atual,principal$classe_futura,principal$species,fmt(principal$registros)))
+} else cat("Não foram encontradas transições entre os registros com informação nos dois períodos.\n\n")
+```
+
+As letras representam categorias climáticas, não uma escala linear de deterioração ambiental. A tabela identifica quais mudanças merecem investigação, mas não quantifica diretamente o aquecimento, a alteração da precipitação ou a adequação do habitat. Essas perguntas exigem examinar as variáveis climáticas contínuas que sustentam a classificação (Beck et al., 2023).
+
+# Efeito da repetição espacial
+
+Ocorrências da mesma espécie podem ocupar a mesma célula e, portanto, repetir a mesma comparação climática. A análise abaixo conserva uma observação por espécie e célula com clima válido. Ela reduz o peso da repetição dentro da grade, mas não corrige lacunas de amostragem ou autocorrelação entre células vizinhas.
+
+```{r sensibilidade-celulas}
+tab(z$sensibilidade,col.names=c("Espécie","Registros válidos","Alteração por registros (%)",
+                               "Células válidas","Alteração por células (%)","Diferença (p.p.)"))
+```
+
+```{r interpretacao-celulas, echo=FALSE, results='asis'}
+s <- z$sensibilidade[is.finite(z$sensibilidade$diferenca_pp),]
+if(nrow(s)) {
+  x <- s[which.max(abs(s$diferenca_pp)),]
+  cat(sprintf("A maior diferença entre as duas formas de contagem ocorre em ***%s***: de **%s%% por registro** para **%s%% por célula**, uma diferença de **%s pontos percentuais**. Esse contraste mostra quanto o resultado depende da distribuição dos registros entre as células ocupadas.\n\n",x$species,fmt(x$percentual_registros,1),fmt(x$percentual_celulas,1),fmt(x$diferenca_pp,1)))
+}
+```
+
+# Incerteza das coordenadas
+
+Uma coordenada com incerteza superior à dimensão aproximada da célula pode representar locais com classes diferentes. Por isso, apresentamos uma análise adicional restrita aos registros com incerteza declarada entre 0 e 1.000 m. O valor zero é mantido conforme informado na base, sem ser interpretado como prova de localização exata. Registros sem estimativa de incerteza não entram nesse subconjunto.
+
+```{r incerteza}
+if(!is.null(z$incerteza)) tab(z$incerteza,col.names=c("Espécie","Incerteza não informada","Incerteza > 1 km"))
+```
+
+```{r sensibilidade-incerteza}
+if(!is.null(z$precisos)) tab(z$precisos,col.names=c("Espécie","Total ≤ 1 km","Clima válido","Sem clima","Mantidos","Alterados","Alteração (%)"))
+```
+
+Percentuais baseados em poucos registros são sensíveis à inclusão ou exclusão de poucas localidades. Isso é especialmente relevante para espécies menos representadas neste conjunto. A análise de sensibilidade não substitui a revisão das coordenadas nem comprova a precisão declarada.
+
+```{r interpretacao-precisao, echo=FALSE, results='asis'}
+if(!is.null(z$precisos)) {
+  pequenos <- z$precisos[z$precisos$validos<10,]
+  if(nrow(pequenos)) {
+    cat("No subconjunto com incerteza declarada de até 1 km, há menos de dez registros válidos para ",
+        paste(paste0("*",pequenos$species,"* (n = ",pequenos$validos,")"),collapse=", "),
+        ". Nesses casos, percentuais de 0% ou 100% não demonstram estabilidade ou alteração generalizada; refletem um subconjunto insuficiente para sustentar essa interpretação. Quando n = 0, o percentual não é calculado.\n\n",sep="")
+  }
+}
+```
+
+
+# Leitura ecológic
+
+Os resultados identificam localidades documentadas que podem mudar de classe climática sob SSP5-8.5. A comparação por espécie ganha consistência quando é lida junto ao número de registros válidos, à distribuição no mapa e à análise por células. Divergências entre essas medidas indicam que o esforço de documentação influencia o retrato da exposição.
+
+A etapa 4 mostra como esse esforço varia no espaço e no tempo. Já a etapa 5 acrescenta uma comparação climática às coordenadas disponíveis, sem demonstrar que as populações continuam presentes nesses locais. Essa distinção limita o alcance das inferências: os mapas orientam onde aprofundar a investigação, enquanto avaliações de persistência requerem dados demográficos, condições do habitat e respostas das espécies ao clima.
+
+# Produtos e rastreabilidade
+
+O código salva o resumo por espécie, as transições, as análises de sensibilidade e as ocorrências com clima na pasta `resultados/`. A versão espacial é `05_ocorrencias_clima.gpkg`. O site oferece apenas as tabelas sintéticas em [Resultados](resultados.html); as entradas compactas e o código acompanham o projeto.
+
+```{r sessao, echo=FALSE}
+sessionInfo()
+```
+
+# Referências
+
+Beck, H. E., McVicar, T. R., Vergopolan, N., Berg, A., Lutsko, N. J., Dufour, A., Zeng, Z., Jiang, X., van Dijk, A. I. J. M., & Miralles, D. G. (2023). High-resolution (1 km) Köppen-Geiger maps for 1901–2099 based on constrained CMIP6 projections. *Scientific Data, 10*, 724. https://doi.org/10.1038/s41597-023-02549-6
+
+Meyer, C., Weigelt, P., & Kreft, H. (2016). Multidimensional biases, gaps and uncertainties in global plant occurrence information. *Ecology Letters, 19*(8), 992–1006. https://doi.org/10.1111/ele.12624
+
+Royal Botanic Gardens, Kew. (2026). *Paubrasilia echinata (Lam.) Gagnon, H.C.Lima & G.P.Lewis*. Plants of the World Online. Consultado em 15 de setembro de 2026, em https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:77158012-1. Sem DOI.

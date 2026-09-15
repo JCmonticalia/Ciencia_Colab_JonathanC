@@ -1,0 +1,32 @@
+---
+title: "Flora, biomas e mudança climática"
+author: "Jonathan David Castillo"
+---
+
+```{r setup, include=FALSE}
+source("R/comum.R",encoding="UTF-8")
+```
+
+Este projeto acompanha registros de ocorrência de plantas desde a depuração da base até a análise de exposição climática de seis espécies da Mata Atlântica. As decisões de seleção, as tabelas e o código estão organizados em cinco etapas.
+
+## Percurso da análise
+
+| Etapa | Pergunta | Produto |
+|:--|:--|:--|
+| [01 · Depuração](01_depuracao_BR_01.html) | Quais registros apresentam problemas básicos? | Base inicial e controle de exclusões |
+| [02 · Limpeza espacial](02_limpeza_complementar_BR_01.html) | Quais registros são conservados para o Brasil? | Base limpa |
+| [03 · Associação aos biomas](03_analise_exploratoria.html) | Como os registros se distribuem entre biomas? | Matriz com bioma identificado |
+| [04 · Séries temporais](04_analise_temporal_e_mapas.html) | Como varia a documentação de espécies ao longo do tempo? | Séries de registros e riqueza observada |
+| [05 · Exposição climática](05_mudanca_climatica_mata_atlantica.html) | Quais localidades mudam de classe climática? | Comparação entre 1991–2020 e 2071–2099 |
+
+## O que está disponível
+
+As etapas 1–3 apresentam o código de processamento e resumos extraídos das matrizes existentes. As etapas 4 e 5 foram recalculadas a partir desses produtos. A etapa climática inclui uma comparação por registros e outra por células, além da avaliação da incerteza das coordenadas.
+
+Os textos distinguem riqueza documentada de diversidade real e exposição climática de resposta biológica. Percentuais e interpretações quantitativas são gerados junto com as tabelas, evitando resultados fixos que deixem de corresponder aos dados.
+
+Consulte as [tabelas de resultados](resultados.html) para acompanhar os denominadores e as análises de sensibilidade.
+
+## Fontes
+
+As ocorrências procedem das matrizes GBIF (06/09/2026). O DOI da descarga GBIF não foi informado nos arquivos e permanece pendente na documentação. Os limites dos biomas são os distribuídos pelo `geobr` para 2025. Os mapas climáticos seguem Beck et al. (2023), com atribuição e licença CC BY 4.0. As referências completas estão nas etapas correspondentes.

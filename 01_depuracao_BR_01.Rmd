@@ -1,0 +1,637 @@
+---
+title: "01. Depuração inicial de registros do GBIF"
+author: "Jonathan David Castillo"
+date: "`r format(Sys.Date(), '%d/%m/%Y')`"
+params:
+  reprocessar: false
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+# Objetivo
+
+Esta etapa apresenta a **depuração inicial da base `Br_01`**, com foco na qualidade dos registros de ocorrência. O procedimento foi organizado para que cada decisão de limpeza possa ser acompanhada e, posteriormente, reproduzida.
+
+A base original é mantida separada da base limpa. Além disso, é criada uma matriz de controle que registra o motivo pelo qual cada registro foi eliminado.
+
+**Importante:** os arquivos de entrada e saída são considerados relativos à pasta principal do projeto. Por isso, não é utilizado `setwd()` com um caminho específico do computador.
+
+## 1. Pacotes
+
+Os pacotes utilizados nesta etapa são carregados abaixo. A instalação dos pacotes não faz parte do documento, pois ela deve ser feita previamente no ambiente R.
+
+```{r setup, include=FALSE}
+source("R/comum.R", encoding="UTF-8")
+knitr::opts_chunk$set(eval=isTRUE(params$reprocessar))
+```
+
+> **Execução:** esta página apresenta o procedimento original e um resumo verificado dos arquivos já produzidos. Os blocos de depuração ficam disponíveis para consulta. Para refazer os cálculos completos, configure as entradas locais e execute com `params = list(reprocessar = TRUE)`. A geração padrão do site utiliza os resumos incluídos, sem repetir a leitura das bases de vários gigabytes.
+
+
+```{r}
+library(data.table)
+library(dplyr)
+library(stringr)
+library(sf)
+library(countrycode)
+```
+
+## 2. Criar a pasta de resultados
+
+A pasta `resultados` será utilizada para guardar as matrizes produzidas durante a depuração.
+
+```{r}
+if(!dir.exists("resultados")){
+  dir.create("resultados")
+}
+```
+
+## 3. Carregar a base original
+
+A base `Br_01.csv` é carregada utilizando `fread()`, que é adequada para arquivos grandes.
+
+```{r}
+Br_01 <- fread(
+  entrada("Br_01.csv"),
+  encoding = "UTF-8",
+  na.strings = c("", "NA", "NULL", "null")
+)
+```
+
+## 4. Revisão inicial da matriz
+
+Antes de realizar qualquer exclusão, verificamos o tamanho da base e as variáveis disponíveis.
+
+```{r}
+cat("\n========================================\n")
+cat("REVISÃO INICIAL DE Br_01\n")
+cat("========================================\n\n")
+
+cat("Número de registros:", nrow(Br_01), "\n")
+cat("Número de colunas:", ncol(Br_01), "\n\n")
+
+cat("Primeiras colunas:\n")
+print(names(Br_01))
+```
+
+## 5. Verificar variáveis importantes
+
+A lista abaixo reúne variáveis relevantes para a avaliação taxonômica, espacial e temporal dos registros.
+
+```{r}
+colunas_relevantes <- c(
+  "gbifID",
+  "occurrenceID",
+  "scientificName",
+  "species",
+  "genus",
+  "family",
+  "taxonRank",
+  "kingdom",
+  "basisOfRecord",
+  "occurrenceStatus",
+  "country",
+  "countryCode",
+  "stateProvince",
+  "municipality",
+  "locality",
+  "decimalLatitude",
+  "decimalLongitude",
+  "coordinateUncertaintyInMeters",
+  "coordinatePrecision",
+  "geodeticDatum",
+  "eventDate",
+  "year",
+  "month",
+  "day",
+  "institutionCode",
+  "collectionCode",
+  "catalogNumber"
+)
+
+colunas_presentes <- colunas_relevantes[
+  colunas_relevantes %in% names(Br_01)
+]
+
+cat("\nVariáveis relevantes encontradas:\n")
+print(colunas_presentes)
+```
+
+## 6. Converter as coordenadas para formato numérico
+
+As coordenadas e a incerteza espacial são convertidas para valores numéricos antes dos filtros espaciais.
+
+```{r}
+if("decimalLatitude" %in% names(Br_01)){
+  Br_01[, decimalLatitude := as.numeric(decimalLatitude)]
+}
+
+if("decimalLongitude" %in% names(Br_01)){
+  Br_01[, decimalLongitude := as.numeric(decimalLongitude)]
+}
+
+if("coordinateUncertaintyInMeters" %in% names(Br_01)){
+  Br_01[, coordinateUncertaintyInMeters :=
+          as.numeric(coordinateUncertaintyInMeters)]
+}
+```
+
+## 7. Criar a matriz de controle da depuração
+
+A matriz `control_Br01` permite acompanhar cada registro da base original e registrar o primeiro motivo de eliminação identificado.
+
+```{r}
+control_Br01 <- data.table(
+  fila_original = seq_len(nrow(Br_01)),
+  gbifID = if("gbifID" %in% names(Br_01))
+    Br_01$gbifID else NA,
+  occurrenceID = if("occurrenceID" %in% names(Br_01))
+    Br_01$occurrenceID else NA_character_,
+  motivo_eliminacao = NA_character_
+)
+```
+
+```{r}
+registrar_eliminacion <- function(control, condicion, motivo){
+
+  ids <- which(
+    condicion &
+    is.na(control$motivo_eliminacao)
+  )
+
+  if(length(ids) > 0){
+    control$motivo_eliminacao[ids] <- motivo
+  }
+
+  return(control)
+}
+```
+
+## 8. Registros sem latitude
+
+Registros sem latitude não permitem uma análise espacial baseada em coordenadas.
+
+```{r}
+if("decimalLatitude" %in% names(Br_01)){
+
+  condicion <- is.na(Br_01$decimalLatitude)
+
+  control_Br01 <- registrar_eliminacion(
+    control_Br01,
+    condicion,
+    "Latitude ausente"
+  )
+
+}
+```
+
+## 9. Registros sem longitude
+
+Da mesma forma, registros sem longitude não podem ser utilizados na análise espacial.
+
+```{r}
+if("decimalLongitude" %in% names(Br_01)){
+
+  condicion <- is.na(Br_01$decimalLongitude)
+
+  control_Br01 <- registrar_eliminacion(
+    control_Br01,
+    condicion,
+    "Longitude ausente"
+  )
+
+}
+```
+
+## 10. Eliminar coordenadas 0,0
+
+A coordenada `(0,0)` é tratada como uma coordenada inválida para esta análise.
+
+```{r}
+if(all(c(
+  "decimalLatitude",
+  "decimalLongitude"
+) %in% names(Br_01))){
+
+  condicion <-
+    Br_01$decimalLatitude == 0 &
+    Br_01$decimalLongitude == 0
+
+  control_Br01 <- registrar_eliminacion(
+    control_Br01,
+    condicion,
+    "Coordenada 0,0"
+  )
+
+}
+```
+
+## 11. Eliminar latitudes impossíveis
+
+São identificados valores fora do intervalo geográfico possível de latitude.
+
+```{r}
+if("decimalLatitude" %in% names(Br_01)){
+
+  condicion <-
+    !is.na(Br_01$decimalLatitude) &
+    (
+      Br_01$decimalLatitude < -90 |
+      Br_01$decimalLatitude > 90
+    )
+
+  control_Br01 <- registrar_eliminacion(
+    control_Br01,
+    condicion,
+    "Latitude fora do intervalo"
+  )
+
+}
+```
+
+## 12. Eliminar longitudes impossíveis
+
+O mesmo procedimento é aplicado às longitudes.
+
+```{r}
+if("decimalLongitude" %in% names(Br_01)){
+
+  condicion <-
+    !is.na(Br_01$decimalLongitude) &
+    (
+      Br_01$decimalLongitude < -180 |
+      Br_01$decimalLongitude > 180
+    )
+
+  control_Br01 <- registrar_eliminacion(
+    control_Br01,
+    condicion,
+    "Longitude fora do intervalo"
+  )
+
+}
+```
+
+## 13. Eliminar registros com status de ocorrência ausente
+
+Registros cujo `occurrenceStatus` é igual a `absent` não representam uma ocorrência presente e, portanto, são marcados para exclusão.
+
+```{r}
+if("occurrenceStatus" %in% names(Br_01)){
+
+  condicion <-
+    !is.na(Br_01$occurrenceStatus) &
+    tolower(trimws(Br_01$occurrenceStatus)) == "absent"
+
+  control_Br01 <- registrar_eliminacion(
+    control_Br01,
+    condicion,
+    "Occurrence status = absent"
+  )
+
+}
+```
+
+## 14. Eliminar registros sem nome científico
+
+Para as análises taxonômicas, é necessário que o registro possua um nome científico.
+
+```{r}
+if("scientificName" %in% names(Br_01)){
+
+  condicion <-
+    is.na(Br_01$scientificName) |
+    trimws(Br_01$scientificName) == ""
+
+  control_Br01 <- registrar_eliminacion(
+    control_Br01,
+    condicion,
+    "Nome científico ausente"
+  )
+
+}
+```
+
+## 15. Eliminar registros com nível taxonômico muito geral
+
+São excluídos registros identificados apenas em níveis taxonômicos gerais.
+
+```{r}
+if("taxonRank" %in% names(Br_01)){
+
+  niveis_excluir <- c(
+    "KINGDOM",
+    "PHYLUM",
+    "CLASS",
+    "ORDER",
+    "FAMILY"
+  )
+
+  condicion <-
+    !is.na(Br_01$taxonRank) &
+    toupper(trimws(Br_01$taxonRank)) %in% niveis_excluir
+
+  control_Br01 <- registrar_eliminacion(
+    control_Br01,
+    condicion,
+    "Nível taxonômico muito geral"
+  )
+
+}
+```
+
+## 16. Resumo dos problemas encontrados
+
+Neste ponto, podemos visualizar quantos registros foram marcados para cada tipo de problema.
+
+```{r}
+cat("\n========================================\n")
+cat("PROBLEMAS DETECTADOS\n")
+cat("========================================\n\n")
+
+resumo_problemas <- control_Br01[
+  !is.na(motivo_eliminacao),
+  .N,
+  by = motivo_eliminacao
+][order(-N)]
+
+print(resumo_problemas)
+```
+
+## 17. Criar a matriz limpa
+
+Somente os registros que não receberam um motivo de eliminação são mantidos.
+
+```{r}
+linhas_validas <- is.na(
+  control_Br01$motivo_eliminacao
+)
+
+Br_01_clean <- Br_01[linhas_validas]
+
+cat("\n========================================\n")
+cat("RESULTADO DA DEPURAÇÃO INICIAL\n")
+cat("========================================\n\n")
+
+cat(
+  "Registros originais:",
+  nrow(Br_01),
+  "\n"
+)
+
+cat(
+  "Registros conservados:",
+  nrow(Br_01_clean),
+  "\n"
+)
+
+cat(
+  "Registros eliminados:",
+  sum(!linhas_validas),
+  "\n"
+)
+
+cat(
+  "Percentual conservado:",
+  round(
+    nrow(Br_01_clean) /
+      nrow(Br_01) * 100,
+    2
+  ),
+  "%\n"
+)
+```
+
+## 18. Guardar os registros eliminados
+
+Os registros eliminados são preservados em um arquivo separado. Isso permite verificar posteriormente o que foi removido sem alterar a base original.
+
+```{r}
+linhas_eliminadas <- !is.na(
+  control_Br01$motivo_eliminacao
+)
+
+Br_01_eliminados <- Br_01[linhas_eliminadas]
+
+Br_01_eliminados[
+  ,
+  motivo_eliminacao :=
+    control_Br01$motivo_eliminacao[
+      linhas_eliminadas
+    ]
+]
+```
+
+## 19. Verificar duplicados exatos
+
+A verificação abaixo identifica registros completamente duplicados.
+
+```{r}
+duplicados_exatos <- duplicated(Br_01_clean)
+
+cat("\nDuplicados exatos:",
+    sum(duplicados_exatos),
+    "\n")
+```
+
+## 20. Verificar duplicados por `gbifID`
+
+O identificador do GBIF também é verificado para identificar repetições.
+
+```{r}
+if("gbifID" %in% names(Br_01_clean)){
+
+  duplicados_gbifID <-
+    !is.na(Br_01_clean$gbifID) &
+    duplicated(Br_01_clean$gbifID)
+
+  cat(
+    "Duplicados por gbifID:",
+    sum(duplicados_gbifID),
+    "\n"
+  )
+
+}
+```
+
+## 21. Verificar o tipo de registro
+
+```{r}
+if("basisOfRecord" %in% names(Br_01_clean)){
+
+  tabela_basis <- Br_01_clean[
+    ,
+    .N,
+    by = basisOfRecord
+  ][order(-N)]
+
+  print(tabela_basis)
+
+}
+```
+
+## 22. Verificar o nível taxonômico
+
+```{r}
+if("taxonRank" %in% names(Br_01_clean)){
+
+  tabela_rank <- Br_01_clean[
+    ,
+    .N,
+    by = taxonRank
+  ][order(-N)]
+
+  print(tabela_rank)
+
+}
+```
+
+## 23. Verificar os países
+
+A combinação entre `countryCode` e `country` é conferida antes das etapas específicas para o Brasil.
+
+```{r}
+if(all(c(
+  "countryCode",
+  "country"
+) %in% names(Br_01_clean))){
+
+  tabela_paises <- Br_01_clean[
+    ,
+    .N,
+    by = .(
+      countryCode,
+      country
+    )
+  ][order(-N)]
+
+  print(tabela_paises)
+
+}
+```
+
+## 24. Identificar coordenadas repetidas dentro da mesma espécie
+
+Aqui não eliminamos os registros. Apenas identificamos registros que apresentam a mesma espécie e as mesmas coordenadas.
+
+```{r}
+if(all(c(
+  "scientificName",
+  "decimalLatitude",
+  "decimalLongitude"
+) %in% names(Br_01_clean))){
+
+  Br_01_clean[
+    ,
+    coord_taxon := paste(
+      scientificName,
+      decimalLatitude,
+      decimalLongitude,
+      sep = "_"
+    )
+  ]
+
+  duplicados_coord_taxon <- Br_01_clean[
+    duplicated(coord_taxon) |
+    duplicated(coord_taxon, fromLast = TRUE)
+  ]
+
+  cat(
+    "\nRegistros com mesma espécie + coordenada:",
+    nrow(duplicados_coord_taxon),
+    "\n"
+  )
+
+}
+```
+
+## 25. Identificar registros com alta incerteza espacial
+
+Registros com incerteza superior a 10 km são marcados, mas não são eliminados nesta etapa.
+
+```{r}
+if("coordinateUncertaintyInMeters" %in% names(Br_01_clean)){
+
+  Br_01_clean[
+    ,
+    incerteza_alta :=
+      !is.na(coordinateUncertaintyInMeters) &
+      coordinateUncertaintyInMeters > 10000
+  ]
+
+  cat(
+    "\nRegistros com incerteza > 10 km:",
+    sum(Br_01_clean$incerteza_alta),
+    "\n"
+  )
+
+}
+```
+
+## 26. Salvar os resultados
+
+Os quatro arquivos abaixo representam os principais produtos da depuração inicial.
+
+```{r}
+fwrite(
+  Br_01_clean,
+  "resultados/Br_01_clean_inicial.csv"
+)
+
+fwrite(
+  Br_01_eliminados,
+  "resultados/Br_01_eliminados_inicial.csv"
+)
+
+fwrite(
+  control_Br01,
+  "resultados/Br_01_control_depuracion.csv"
+)
+
+fwrite(
+  resumo_problemas,
+  "resultados/Br_01_resumo_depuracao.csv"
+)
+```
+
+## 27. Resultado da etapa
+
+```{r}
+cat("\n")
+cat("========================================\n")
+cat("DEPURAÇÃO INICIAL CONCLUÍDA\n")
+cat("========================================\n\n")
+
+cat(
+  "Matriz original: Br_01.csv\n"
+)
+
+cat(
+  "Matriz limpa: resultados/Br_01_clean_inicial.csv\n"
+)
+
+cat(
+  "Registros eliminados: resultados/Br_01_eliminados_inicial.csv\n"
+)
+
+cat(
+  "Controle completo: resultados/Br_01_control_depuracion.csv\n"
+)
+
+cat(
+  "Resumo: resultados/Br_01_resumo_depuracao.csv\n"
+)
+```
+
+# Resumo verificado da execução disponível
+
+```{r resumo-publicado, eval=TRUE, echo=FALSE}
+res <- readRDS(caminho("data", "resumo01.rds"))
+res$motivo_eliminacao[is.na(res$motivo_eliminacao) | res$motivo_eliminacao == ""] <- "Mantido"
+tab(res, col.names=c("Situação", "Registros"))
+```
+
+Os valores acima foram extraídos das matrizes disponíveis em 15/09/2026. São produtos da execução anterior e não constituem uma nova execução integral das etapas 1–3. As correções de código desta versão passam a valer quando o processamento completo for refeito; nesse caso, atualize os resumos antes de gerar o site.

@@ -1,0 +1,32 @@
+name: "flora-biomas-clima"
+output_dir: "docs"
+navbar:
+  title: "Flora, biomas e clima"
+  left:
+    - text: "Início"
+      href: index.html
+    - text: "Etapas"
+      menu:
+        - text: "01 · Depuração"
+          href: 01_depuracao_BR_01.html
+        - text: "02 · Limpeza espacial"
+          href: 02_limpeza_complementar_BR_01.html
+        - text: "03 · Biomas"
+          href: 03_analise_exploratoria.html
+        - text: "04 · Tempo e registros"
+          href: 04_analise_temporal_e_mapas.html
+        - text: "05 · Exposição climática"
+          href: 05_mudanca_climatica_mata_atlantica.html
+    - text: "Resultados"
+      href: resultados.html
+output:
+  html_document:
+    theme: flatly
+    highlight: textmate
+    toc: true
+    toc_float: true
+    number_sections: false
+    code_folding: hide
+    self_contained: true
+    css: assets/estilo.css
+exclude: ["data", "R", "resultados", "work", "config.local.R", "config.exemplo.R", "README.md", "PROVENIENCIA.md"]

@@ -1,0 +1,9 @@
+body {color:#263b3b;line-height:1.75;background:#fcfcf8;font-size:16px;}
+.main-container{max-width:1160px;} h1,h2,h3{color:#205c64;font-weight:600;line-height:1.25;}
+h1.title{font-size:36px;margin-top:36px;}h2{margin-top:40px;}a{color:#216d79;}
+.navbar-default{background:#183e43;border:0;} .navbar-default .navbar-brand,.navbar-default .navbar-nav>li>a{color:#fff;}
+.navbar-default .navbar-nav>.open>a{background:#205c64;color:#fff;}
+blockquote{border-left:4px solid #9eb1a1;background:#f0f3ed;font-size:15px;}
+table{font-size:14px;} th{color:#205c64;}pre{font-size:12px;max-height:520px;overflow:auto;}
+.table{display:block;overflow-x:auto;}details{margin:20px 0;}summary{cursor:pointer;color:#216d79;}
+.tocify{font-size:14px;} .tocify-item.active{background:#205c64;} @media(max-width:767px){h1.title{font-size:28px;}body{font-size:15px;}}

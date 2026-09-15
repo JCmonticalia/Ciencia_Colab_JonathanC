@@ -1,0 +1,32 @@
+# Configuração local
+config.local.R
+
+# Arquivos temporários do R
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.log
+
+# Bases grandes
+Br_*.csv
+data/*.csv
+data/*.rds
+
+# Resultados grandes
+resultados/Br_*.csv
+resultados/*.csv
+resultados/*.rds
+resultados/*.gpkg
+resultados/*.tif
+resultados/05_ocorrencias_com_clima.csv
+
+# Dados espaciais e climáticos pesados
+data/*.tif
+data/*.tiff
+*.zip
+koppen_data/
+
+# Arquivos gerados pelo R Markdown
+*_cache/
+*_files/

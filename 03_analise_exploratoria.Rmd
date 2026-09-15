@@ -1,0 +1,550 @@
+---
+title: "03. Análise exploratória dos registros por bioma"
+author: "Jonathan David Castillo"
+date: "2026-09-15"
+params:
+  reprocessar: false
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+# Riqueza de plantas nos biomas do Brasil
+
+### Objetivo
+
+Nesta etapa, a matriz `Br_01_clean2` é utilizada para explorar a distribuição **temporal e espacial** dos registros de ocorrência e para associá-los aos biomas brasileiros.
+
+O procedimento é dividido em quatro partes principais:
+
+1. verificar a distribuição temporal dos registros;
+2. associar cada ocorrência a um bioma;
+3. avaliar a quantidade de registros e a riqueza observada por bioma;
+4. explorar a variação temporal da riqueza.
+
+```{r setup, include=FALSE}
+source("R/comum.R", encoding="UTF-8")
+knitr::opts_chunk$set(eval=isTRUE(params$reprocessar))
+```
+
+> **Execução:** esta página apresenta o procedimento original e um resumo verificado dos arquivos já produzidos. Os blocos de depuração ficam disponíveis para consulta. Para refazer os cálculos completos, configure as entradas locais e execute com `params = list(reprocessar = TRUE)`. A geração padrão do site utiliza os resumos incluídos, sem repetir a leitura das bases de vários gigabytes.
+
+
+### 1. Pacotes
+
+```{r}
+library(dplyr)
+library(sf)
+library(geobr)
+library(ggplot2)
+library(rnaturalearth)
+library(scales)
+```
+
+### 2. Carregar a matriz da etapa anterior
+
+A análise começa a partir do arquivo produzido na limpeza complementar.
+
+```{r}
+Br_01_clean2 <- data.table::fread(
+  entrada("resultados/Br_01_clean2.csv"),
+  encoding = "UTF-8",
+  na.strings = c("", "NA", "NULL", "null")
+)
+```
+
+### 3. Distribuição temporal dos registros
+
+Primeiro verificamos como os registros estão distribuídos ao longo dos anos.
+
+```{r}
+Br_01_clean2 |>
+  dplyr::count(year) |>
+  ggplot(aes(x = year, y = n)) +
+  
+  geom_line(
+    color = "#1f4e79",
+    linewidth = 1
+  ) +
+  
+  geom_point(
+    color = "#1f4e79",
+    size = 1.5,
+    alpha = 0.8
+  ) +
+  
+  labs(
+    x = "Ano",
+    y = "Registros",
+    title = "Registros por ano"
+  ) +
+  
+  scale_y_continuous(
+    labels = scales::label_number(big.mark = ".")
+  ) +
+  
+  theme_classic(base_size = 12) +
+  
+  theme(
+    axis.text = element_text(color = "grey30"),
+    plot.title = element_text(
+      face = "bold",
+      size = 14,
+      color = "grey20"
+    )
+  )
+```
+
+### 4. Riqueza de espécies por ano
+
+Além do número de registros, calculamos a riqueza observada de espécies para cada ano.
+
+```{r}
+
+riqueza_anual <- Br_01_clean2 |>
+  dplyr::filter(!is.na(year)) |>
+  dplyr::group_by(year) |>
+  dplyr::summarise(
+    riqueza = dplyr::n_distinct(scientificName, na.rm = TRUE),
+    registros = dplyr::n(),
+    .groups = "drop"
+  ) |>
+  dplyr::arrange(year)
+
+ggplot(riqueza_anual, aes(x = year, y = riqueza)) +
+  geom_line(
+    color = "#1f4e79",
+    linewidth = 1
+  ) +
+  geom_point(
+    color = "#1f4e79",
+    size = 1.5,
+    alpha = 0.8
+  ) +
+  labs(
+    title = "Riqueza por ano",
+    x = "Ano",
+    y = "Espécies"
+  ) +
+  scale_y_continuous(
+    labels = scales::label_number(big.mark = ".")
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.text = element_text(color = "grey30"),
+    plot.title = element_text(
+      face = "bold",
+      size = 14,
+      color = "grey20"
+    )
+  )
+```
+
+
+### 5. Preparar a matriz para as análises por bioma
+
+Para as análises seguintes, mantemos apenas as variáveis necessárias para identificação taxonômica, localização, tempo e origem dos registros.
+
+```{r}
+Br_01_analisis <- Br_01_clean2 |>
+  select(
+    gbifID,
+    scientificName,
+    species,
+    coordinateUncertaintyInMeters,
+    speciesKey,
+    family,
+    genus,
+    decimalLatitude,
+    decimalLongitude,
+    year,
+    month,
+    stateProvince,
+    elevation,
+    basisOfRecord,
+    datasetKey,
+    institutionCode
+  )
+```
+
+### 6. Baixar os biomas do Brasil
+
+Os limites de 2025, obtidos da distribuição oficial do `geobr`, estão incluídos no projeto.
+
+```{r}
+biomas <- readRDS(caminho("data", "biomas_2025.rds"))
+```
+
+### 7. Padronizar o sistema de coordenadas
+
+As ocorrências e os biomas são trabalhados no sistema WGS84, correspondente ao EPSG 4326.
+
+```{r}
+biomas <- st_transform(
+  biomas,
+  crs = 4326
+)
+
+Br_01_analisis$bioma <- NA_character_
+```
+
+### 8. Associar as ocorrências aos biomas
+
+Como a matriz pode conter um número muito grande de registros, a associação espacial é realizada em blocos de 500.000 registros. Isso reduz a quantidade de dados processada de uma única vez.
+
+```{r}
+bloques <- split(
+  seq_len(nrow(Br_01_analisis)),
+  ceiling(seq_len(nrow(Br_01_analisis)) / 500000)
+)
+
+for (i in seq_along(bloques)) {
+
+  ids <- bloques[[i]]
+
+  pontos <- st_as_sf(
+    Br_01_analisis[ids, ],
+    coords = c("decimalLongitude", "decimalLatitude"),
+    crs = 4326,
+    remove = FALSE
+  )
+
+  resultado <- st_within(pontos, biomas)
+  Br_01_analisis$bioma[ids] <- vapply(resultado, function(j) {
+    if (length(j) == 1L) biomas$name_biome[j] else NA_character_
+  }, character(1))
+
+  rm(pontos, resultado)
+  gc()
+
+  cat(
+    "Bloco", i, "de", length(bloques),
+    "concluído\n"
+  )
+}
+```
+
+### 9. Verificar a associação aos biomas
+
+```{r}
+table(
+  Br_01_analisis$bioma,
+  useNA = "ifany"
+)
+```
+
+### 10. Verificar ocorrências que permaneceram sem bioma
+
+Os registros que não receberam um bioma são transformados em objetos espaciais para verificar sua localização.
+
+```{r}
+pontos_na <- Br_01_analisis |>
+  filter(is.na(bioma)) |>
+  st_as_sf(
+    coords = c("decimalLongitude", "decimalLatitude"),
+    crs = 4326,
+    remove = FALSE
+  )
+
+brasil <- ne_countries(
+  country = "Brazil",
+  scale = "medium",
+  returnclass = "sf"
+)
+
+ggplot() +
+  geom_sf(
+    data = brasil,
+    fill = "grey70",
+    color = "white",
+    linewidth = 0.4
+  ) +
+  geom_sf(
+    data = pontos_na,
+    color = "black",
+    size = 0.8
+  ) +
+  coord_sf(
+    xlim = c(-75, -34),
+    ylim = c(-35, 6),
+    expand = FALSE
+  ) +
+  theme_void() +
+  theme(
+    panel.background = element_rect(fill = "grey85", color = NA),
+    plot.background = element_rect(fill = "grey85", color = NA)
+  )
+```
+
+### 11. Verificar quais pontos estão dentro do Brasil
+
+```{r}
+pontos_na$en_brasil <- lengths(
+  st_intersects(pontos_na, brasil)
+) > 0
+
+table(pontos_na$en_brasil)
+```
+
+### 12. Reavaliar os registros sem bioma
+
+Para os registros que permaneceram sem bioma, realizamos uma segunda associação espacial utilizando `st_intersects()`.
+
+```{r}
+resultado <- st_intersects(pontos_na, biomas)
+# Fronteiras com mais de um bioma permanecem sem atribuição inequívoca.
+Br_01_analisis$bioma[which(is.na(Br_01_analisis$bioma))] <-
+  vapply(resultado, function(j) {
+    if (length(j) == 1L) biomas$name_biome[j] else NA_character_
+  }, character(1))
+
+table(Br_01_analisis$bioma, useNA = "ifany")
+```
+
+### 13. Manter registros com bioma identificado
+
+Para as análises por bioma, permanecem apenas os registros que receberam uma classificação.
+
+```{r}
+Br_01_analisis <- Br_01_analisis |>
+  filter(!is.na(bioma))
+```
+
+### 14. Salvar a matriz utilizada nas análises
+
+A matriz é salva para que as etapas seguintes possam ser executadas de forma independente, sem depender da permanência dos objetos na memória do R.
+
+```{r}
+data.table::fwrite(
+  Br_01_analisis,
+  "resultados/Br_01_analisis.csv"
+)
+```
+
+### 15. Análise temporal geral
+
+Calculamos o número de registros e o número de espécies observadas por ano.
+
+```{r}
+temporal <- Br_01_analisis |>
+  filter(!is.na(year)) |>
+  group_by(year) |>
+  summarise(
+    registros = n(),
+    especies = n_distinct(speciesKey, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(temporal, aes(x = year, y = registros)) +
+  geom_area(alpha = 0.7) +
+  geom_line(linewidth = 0.5) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    x = "Ano",
+    y = "Registros"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.title = element_blank()
+  )
+```
+
+### 16. Resumo temporal
+
+```{r}
+Br_01_analisis |>
+  summarise(
+    registros_total = n(),
+    registros_com_ano = sum(!is.na(year)),
+    registros_sem_ano = sum(is.na(year)),
+    ano_min = min(year, na.rm = TRUE),
+    ano_max = max(year, na.rm = TRUE)
+  )
+```
+
+### 17. Distribuição espacial dos registros
+
+A densidade espacial dos registros é apresentada em uma grade hexagonal.
+
+```{r}
+brasil <- ne_countries(
+  country = "Brazil",
+  scale = "medium",
+  returnclass = "sf"
+)
+
+ggplot() +
+  geom_sf(
+    data = brasil,
+    fill = "grey75",
+    color = "white",
+    linewidth = 0.3
+  ) +
+  stat_bin_hex(
+    data = Br_01_analisis,
+    aes(
+      x = decimalLongitude,
+      y = decimalLatitude
+    ),
+    bins = 120
+  ) +
+  coord_sf(expand = FALSE) +
+  scale_fill_viridis_c(
+    trans = "log10",
+    labels = scales::comma
+  ) +
+  labs(
+    x = NULL,
+    y = NULL,
+    fill = "Registros"
+  ) +
+  theme_void() +
+  theme(
+    legend.position = "right",
+    panel.background = element_rect(
+      fill = "grey90",
+      color = NA
+    )
+  )
+```
+
+### 18. Número de registros por bioma
+
+```{r}
+registros_bioma <- Br_01_analisis |>
+  filter(!is.na(bioma)) |>
+  count(bioma, name = "n_registros") |>
+  arrange(n_registros)
+
+ggplot(
+  registros_bioma,
+  aes(
+    x = reorder(bioma, n_registros),
+    y = n_registros
+  )
+) +
+  geom_col(alpha = 0.85) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    x = NULL,
+    y = "Número de registros"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank()
+  )
+```
+
+### 19. Riqueza observada por bioma
+
+A riqueza corresponde ao número de espécies distintas identificadas pelo `speciesKey` em cada bioma.
+
+```{r}
+riqueza_bioma <- Br_01_analisis |>
+  filter(!is.na(speciesKey)) |>
+  group_by(bioma) |>
+  summarise(
+    especies = n_distinct(speciesKey),
+    .groups = "drop"
+  )
+
+ggplot(
+  riqueza_bioma,
+  aes(
+    x = reorder(bioma, especies),
+    y = especies
+  )
+) +
+  geom_col(alpha = 0.85) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    x = NULL,
+    y = "Riqueza observada (espécies)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank()
+  )
+```
+
+### 20. Registros ao longo do tempo por bioma
+
+```{r}
+temporal_bioma <- Br_01_analisis |>
+  filter(!is.na(year), !is.na(bioma)) |>
+  count(year, bioma, name = "registros")
+```
+
+```{r}
+ggplot(
+  temporal_bioma,
+  aes(x = year, y = registros, fill = bioma)
+) +
+  geom_area(alpha = 0.8) +
+  facet_wrap(~ bioma, scales = "free_y") +
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    x = "Ano",
+    y = "Registros"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  )
+```
+
+### 21. Riqueza observada ao longo do tempo
+
+```{r}
+riqueza_temporal <- Br_01_analisis |>
+  filter(!is.na(year), !is.na(bioma), !is.na(speciesKey)) |>
+  group_by(year, bioma) |>
+  summarise(
+    especies = n_distinct(speciesKey),
+    .groups = "drop"
+  )
+```
+
+```{r}
+ggplot(
+  riqueza_temporal,
+  aes(
+    x = year,
+    y = especies,
+    color = bioma
+  )
+) +
+  geom_line(linewidth = 0.8, alpha = 0.75) +
+  geom_smooth(
+    se = FALSE,
+    linewidth = 1.2,
+    method = "loess"
+  ) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    x = "Ano",
+    y = "Espécies observadas",
+    color = "Bioma"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom"
+  )
+```
+
+# Resumo verificado da execução disponível
+
+```{r resumo-publicado, eval=TRUE, echo=FALSE}
+res <- readRDS(caminho("data", "resumo03.rds"))
+tab(res, col.names=c("Bioma","Registros","Espécies identificadas"))
+```
+
+Os valores acima foram extraídos das matrizes disponíveis em 15/09/2026. São produtos da execução anterior e não constituem uma nova execução integral das etapas 1–3. As correções de código desta versão passam a valer quando o processamento completo for refeito; nesse caso, atualize os resumos antes de gerar o site.

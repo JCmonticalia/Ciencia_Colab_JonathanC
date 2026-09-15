@@ -1,0 +1,21 @@
+---
+title: "Tabelas de resultados"
+---
+
+As tabelas podem ser abertas em R ou em uma planilha. Os percentuais da etapa 5 usam apenas registros com clima válido nos dois períodos; os totais sem informação aparecem separadamente.
+
+## Etapa 4
+
+- [Registros e riqueza por ano e bioma](tabelas/04_registros_riqueza_ano_bioma.csv)
+- [Totais por bioma](tabelas/04_resumo_biomas.csv)
+- [Tendências descritivas](tabelas/04_tendencias_descritivas.csv)
+
+## Etapa 5
+
+- [Exposição por espécie](tabelas/05_resumo_especies.csv)
+- [Transições entre classes climáticas](tabelas/05_transicoes_climaticas.csv)
+- [Comparação entre registros e células](tabelas/05_sensibilidade_celulas.csv)
+- [Análise com incerteza declarada de até 1 km](tabelas/05_sensibilidade_incerteza_1km.csv)
+- [Diagnóstico da incerteza espacial](tabelas/05_incerteza_coordenadas.csv)
+
+A pasta do projeto também contém as ocorrências com os valores extraídos e sua versão GeoPackage. Esses arquivos permitem rever cada associação espacial.
