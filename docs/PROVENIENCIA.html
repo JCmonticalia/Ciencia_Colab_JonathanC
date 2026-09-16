@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>PROVENIENCIA</title>
+
+<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="assets/estilo.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Flora, biomas e clima</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Início</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Etapas
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="01_depuracao_BR_01.html">01 · Depuração</a>
+    </li>
+    <li>
+      <a href="02_limpeza_complementar_BR_01.html">02 · Limpeza espacial</a>
+    </li>
+    <li>
+      <a href="03_analise_exploratoria.html">03 · Biomas</a>
+    </li>
+    <li>
+      <a href="04_analise_temporal_e_mapas.html">04 · Tempo e registros</a>
+    </li>
+    <li>
+      <a href="05_mudanca_climatica_mata_atlantica.html">05 · Exposição climática</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="resultados.html">Resultados</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+
+</div>
+
+
+<div id="proveniência-e-decisões-analíticas" class="section level1">
+<h1>Proveniência e decisões analíticas</h1>
+<div id="origem-dos-arquivos" class="section level2">
+<h2>Origem dos arquivos</h2>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Entrada</th>
+<th align="left">Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>Br_01_control_depuracion.csv</code></td>
+<td align="left">Resumo auditável da etapa 1</td>
+</tr>
+<tr class="even">
+<td align="left"><code>Br_01_clean2.csv</code></td>
+<td align="left">Resumo da etapa 2 e recuperação de
+<code>species</code>, incerteza espacial e licença pelo
+<code>gbifID</code></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>Br_01_analisis.csv</code></td>
+<td align="left">Totais da etapa 3, agregação temporal da etapa 4 e
+seleção de ocorrências da Mata Atlântica</td>
+</tr>
+<tr class="even">
+<td
+align="left"><code>koppen_data/1991_2020/koppen_geiger_0p00833333.tif</code></td>
+<td align="left">Clima de referência</td>
+</tr>
+<tr class="odd">
+<td
+align="left"><code>koppen_data/2071_2099/ssp585/koppen_geiger_0p00833333.tif</code></td>
+<td align="left">Clima futuro</td>
+</tr>
+<tr class="even">
+<td align="left"><code>koppen_data/legend.txt</code></td>
+<td align="left">Correspondência entre códigos e classes</td>
+</tr>
+</tbody>
+</table>
+<p>Os rasters foram lidos do conjunto já presente em
+<code>Ferramentas_Ciencia_Colab</code>. Não foi atribuída uma versão de
+descarga por inferência do nome: a identificação exata da versão do ZIP
+local não estava documentada. O site oficial distribui atualmente V3 e
+solicita a citação de Beck et al. (2023). O artigo descreve V2. Os
+hashes dos arquivos utilizados constam em
+<code>data/manifesto_sha256.csv</code>.</p>
+<p>Limites dos biomas: <code>biomes_2025.parquet</code>, distribuição
+oficial do <code>geobr</code>, release <code>v2.0.0</code>, obtida em
+15/09/2026:</p>
+<p><a
+href="https://github.com/ipea/geobr_prep_data/releases/download/v2.0.0/biomes_2025.parquet"
+class="uri">https://github.com/ipea/geobr_prep_data/releases/download/v2.0.0/biomes_2025.parquet</a></p>
+<p>As geometrias completas foram conservadas em RDS. A simplificação
+cartográfica é aplicada apenas durante o desenho dos mapas.</p>
+</div>
+<div id="universo-das-análises" class="section level2">
+<h2>Universo das análises</h2>
+<ul>
+<li>Matriz da etapa 3: 2.944.266 registros.</li>
+<li>Registros classificados como Mata Atlântica nessa matriz:
+1.412.049.</li>
+<li>Etapa 4: apenas <code>HUMAN_OBSERVATION</code> e
+<code>PRESERVED_SPECIMEN</code>, com ano inteiro positivo, não posterior
+ao ano da execução e bioma informado.</li>
+<li>Riqueza: identificadores <code>speciesKey</code> distintos; valores
+ausentes não contam.</li>
+<li>Etapa 5: seis espécies da lista original, recuperadas pelo
+<code>gbifID</code>, entre os registros atribuídos à Mata Atlântica;
+8.417 registros antes da extração climática.</li>
+<li>Os nomes aceitos são os recebidos da matriz limpa. A única
+correspondência nominal explicitamente prevista é
+<code>Caesalpinia echinata</code> → <code>Paubrasilia echinata</code>,
+confirmada no POWO.</li>
+</ul>
+<p>O recorte não foi feito por uma caixa geográfica nem por um suposto
+arquivo GeoPackage anterior. A atribuição do bioma segue a matriz
+efetivamente produzida na etapa 3. Isso preserva a origem sequencial,
+inclusive suas limitações.</p>
+</div>
+<div id="dados-compactos" class="section level2">
+<h2>Dados compactos</h2>
+<p><code>data/etapa04.rds</code> contém agregações exatas da matriz, não
+uma amostra. <code>data/ocorrencias_alvo_etapa03.rds</code> contém os
+registros das espécies de estudo com os campos necessários. O mapa
+ilustrativo da etapa 2 utiliza uma amostra de 30 mil registros, semente
+123, claramente identificada na legenda.</p>
+<p>Os TIFF globais foram copiados integralmente, sem recorte,
+interpolação ou mudança de resolução. A extração usa a célula que contém
+a coordenada. Cada espécie é analisada por registros e, adicionalmente,
+por células únicas. Registros sem classe válida em um dos períodos
+permanecem documentados e não compõem o denominador de alteração.</p>
+</div>
+<div id="verificações-concluídas" class="section level2">
+<h2>Verificações concluídas</h2>
+<ul>
+<li>As sete páginas HTML foram geradas em R 4.4.1.</li>
+<li>Os códigos climáticos de todos os 8.417 registros foram comparados
+com os dois TIFF globais de origem e coincidiram.</li>
+<li>Os totais por espécie, denominadores e registros sem informação
+foram conferidos.</li>
+<li>A sintaxe dos blocos R dos cinco documentos e de todos os scripts
+foi verificada.</li>
+<li>Os links e recursos locais das páginas foram verificados; nenhum
+arquivo do pacote ultrapassa 100 MB.</li>
+<li>Os gráficos da etapa 5 foram inspecionados após a geração.</li>
+<li>A etapa 5 foi gerada novamente a partir do ZIP extraído em outra
+pasta, sem <code>config.local.R</code> e sem acesso às matrizes
+originais pelo código do documento.</li>
+</ul>
+</div>
+<div id="atribuição-das-fontes" class="section level2">
+<h2>Atribuição das fontes</h2>
+<p>Mapas climáticos: CC BY 4.0; Beck et al. (2023), <a
+href="https://doi.org/10.1038/s41597-023-02549-6"
+class="uri">https://doi.org/10.1038/s41597-023-02549-6</a>.</p>
+<p>Ocorrências: matrizes GBIF fornecidas pelo autor. Os campos
+<code>gbifID</code>, <code>datasetKey</code> e <code>license</code>
+foram preservados no recorte disponibilizado. O DOI da descarga e a
+consulta original devem ser acrescentados pelo autor quando disponíveis;
+não foram inventados.</p>
+<p>Taxonomia do pau-brasil: Royal Botanic Gardens, Kew. (2026).
+<em>Paubrasilia echinata</em>. Plants of the World Online. <a
+href="https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:77158012-1"
+class="uri">https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:77158012-1</a>.
+Sem DOI.</p>
+<p>Vieses de documentação: Meyer, C., Weigelt, P., &amp; Kreft, H.
+(2016). Multidimensional biases, gaps and uncertainties in global plant
+occurrence information. <em>Ecology Letters, 19</em>(8), 992–1006. <a
+href="https://doi.org/10.1111/ele.12624"
+class="uri">https://doi.org/10.1111/ele.12624</a>.</p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

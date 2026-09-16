@@ -2,7 +2,6 @@
 
 ## Origem dos arquivos
 
-Reconstrução realizada em 15/09/2026 a partir dos cinco R Markdown de `projeto_github_pages_Rmd` e dos arquivos já existentes em sua pasta `resultados`.
 
 | Entrada | Uso |
 |:--|:--|
@@ -38,13 +37,6 @@ O recorte não foi feito por uma caixa geográfica nem por um suposto arquivo Ge
 
 Os TIFF globais foram copiados integralmente, sem recorte, interpolação ou mudança de resolução. A extração usa a célula que contém a coordenada. Cada espécie é analisada por registros e, adicionalmente, por células únicas. Registros sem classe válida em um dos períodos permanecem documentados e não compõem o denominador de alteração.
 
-## Alcance da execução
-
-As etapas 4 e 5 são recalculadas na geração do site. As etapas 1–3 exibem os procedimentos e os resumos dos arquivos anteriores. Não foi executada novamente a depuração integral da base bruta de vários gigabytes.
-
-As correções do código das etapas 2 e 3 não foram aplicadas retroativamente às matrizes herdadas. O modo de reprocessamento completo está documentado no README e pode alterar os resultados após uma nova execução.
-
-Não foi possível calcular a relação com áreas protegidas porque a sequência não fornece `dentro_ap` nem um arquivo de limites de proteção. Não foram mantidos percentuais ou conclusões sem resultados verificáveis.
 
 ## Verificações concluídas
 

@@ -28,9 +28,6 @@ source("R/comum.R", encoding="UTF-8")
 knitr::opts_chunk$set(eval=isTRUE(params$reprocessar))
 ```
 
-> **Execução:** esta página apresenta o procedimento original e um resumo verificado dos arquivos já produzidos. Os blocos de depuração ficam disponíveis para consulta. Para refazer os cálculos completos, configure as entradas locais e execute com `params = list(reprocessar = TRUE)`. A geração padrão do site utiliza os resumos incluídos, sem repetir a leitura das bases de vários gigabytes.
-
-
 ### 1. Pacotes
 
 ```{r}
@@ -547,4 +544,3 @@ res <- readRDS(caminho("data", "resumo03.rds"))
 tab(res, col.names=c("Bioma","Registros","Espécies identificadas"))
 ```
 
-Os valores acima foram extraídos das matrizes disponíveis em 15/09/2026. São produtos da execução anterior e não constituem uma nova execução integral das etapas 1–3. As correções de código desta versão passam a valer quando o processamento completo for refeito; nesse caso, atualize os resumos antes de gerar o site.

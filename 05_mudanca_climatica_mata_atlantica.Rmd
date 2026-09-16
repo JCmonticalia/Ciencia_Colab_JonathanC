@@ -2,6 +2,9 @@
 title: "05. Mudança climática nos locais de ocorrência"
 author: "Jonathan David Castillo"
 ---
+# NOTA
+
+Infelizmente, este é apenas um exercício prático de compartilhamento de dados. Os resultados apresentados a seguir não devem ser considerados conclusivos e estão longe de constituir evidências suficientes de um padrão ecológico, devido a diferentes limitações estatísticas, metodológicas e relacionadas ao desenvolvimento da análise.
 
 ```{r setup, include=FALSE}
 source("R/comum.R", encoding="UTF-8")
@@ -180,12 +183,20 @@ if(!is.null(z$precisos)) {
 ```
 
 
-# Leitura ecológic
+# Interpretação ecológica
 
-Os resultados identificam localidades documentadas que podem mudar de classe climática sob SSP5-8.5. A comparação por espécie ganha consistência quando é lida junto ao número de registros válidos, à distribuição no mapa e à análise por células. Divergências entre essas medidas indicam que o esforço de documentação influencia o retrato da exposição.
+**Gráfico de barras**
 
-A etapa 4 mostra como esse esforço varia no espaço e no tempo. Já a etapa 5 acrescenta uma comparação climática às coordenadas disponíveis, sem demonstrar que as populações continuam presentes nesses locais. Essa distinção limita o alcance das inferências: os mapas orientam onde aprofundar a investigação, enquanto avaliações de persistência requerem dados demográficos, condições do habitat e respostas das espécies ao clima.
+O padrão é claro e ecologicamente coerente: as espécies com maior proporção de alteração climática projetada são *Araucaria angustifolia* (81,4%) e *Dicksonia sellowiana* (71,8%), seguidas por *Euterpe edulis* (68,4%). No outro extremo, *Paubrasilia echinata* (38,9%) e *Cariniana legalis* (45,5%) apresentam menor exposição, enquanto *Cattleya labiata* (23,5%) apresenta o menor valor entre todas. No entanto, como esta última espécie possui apenas 17 registros, esse resultado apresenta baixa robustez estatística.
 
+Esse padrão é biogeograficamente coerente: *Araucaria* e *Dicksonia* são táxons associados a climas temperados/subtropicais de altitude, especialmente do tipo Cfb, correspondente ao clima oceânico temperado úmido. A transição dominante detectada (Cfb→Cfa, isto é, de clima temperado úmido para subtropical úmido com verões quentes) corresponde ao tipo de deslocamento climático esperado sob cenários de aquecimento em regiões de maior latitude e altitude no sul do Brasil. Espécies com distribuição associada a condições mais tropicais, como *Paubrasilia*, presente em regiões atualmente classificadas como Aw/Am, apresentam menor proporção de mudança de classe climática por já ocorrerem em categorias climaticamente mais quentes.
+
+**Mapa de distribuição espacial**
+
+O mapa permite identificar onde essa exposição se concentra. O padrão é mais evidente nas regiões Sul e Sudeste, especialmente em áreas atualmente classificadas como Cfb, onde a transição para Cfa é mais generalizada. Em contraste, localidades já inseridas em climas tropicais Af, Am ou Aw apresentam maior proporção de pontos com manutenção da classe climática.
+
+Esse resultado sugere a existência de um gradiente latitudinal e altitudinal de exposição às mudanças climáticas, em vez de uma resposta homogênea ao longo de toda a Mata Atlântica.
+.
 # Produtos e rastreabilidade
 
 O código salva o resumo por espécie, as transições, as análises de sensibilidade e as ocorrências com clima na pasta `resultados/`. A versão espacial é `05_ocorrencias_clima.gpkg`. O site oferece apenas as tabelas sintéticas em [Resultados](resultados.html); as entradas compactas e o código acompanham o projeto.

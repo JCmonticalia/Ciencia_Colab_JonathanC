@@ -29,4 +29,8 @@ Consulte as [tabelas de resultados](resultados.html) para acompanhar os denomina
 
 ## Fontes
 
-As ocorrências procedem das matrizes GBIF (06/09/2026). O DOI da descarga GBIF não foi informado nos arquivos e permanece pendente na documentação. Os limites dos biomas são os distribuídos pelo `geobr` para 2025. Os mapas climáticos seguem Beck et al. (2023), com atribuição e licença CC BY 4.0. As referências completas estão nas etapas correspondentes.
+As ocorrências procedem das matrizes GBIF (06/09/2026). O DOI da descarga GBIF (https://doi.org/10.15468/dl.ezbv7g). Os limites dos biomas são os distribuídos pelo `geobr` para 2025. Os mapas climáticos seguem Beck et al. (2023), com atribuição e licença CC BY 4.0.
+
+## NOTAS
+
+Alguns dos comandos utilizados para a depuração da Etapa 1 e para as análises da Etapa 5 foram gerados com o auxílio de inteligência artificial. Todo o restante do conteúdo presente neste site é de autoria própria. No entanto, cabe destacar que a tradução para o português de várias seções da página foi realizada com o auxílio de ferramentas de tradução. Por esse motivo, peço desculpas por eventuais erros ortográficos e gramaticais.

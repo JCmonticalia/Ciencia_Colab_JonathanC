@@ -19,8 +19,6 @@ Esta etapa acompanha a distribuição dos registros e da riqueza observada nos b
 
 A versão portátil contém os totais por ano e bioma, calculados a partir da matriz completa. Assim, as figuras e os modelos podem ser reproduzidos sem incluir milhões de linhas no site. O procedimento para atualizar esses totais está em `R/atualizar_dados.R`.
 
-Foram incluídos **`r fmt(z$n_temporal)` registros**, de um total de `r fmt(z$n_entrada)` na matriz da etapa 3. A série abrange `r min(a$year)`–`r max(a$year)`. Os anos sem registros não foram preenchidos com zero: ausência de documentação não demonstra ausência de espécies.
-
 # Distribuição entre biomas
 
 ```{r tabela-biomas}
