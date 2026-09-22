@@ -196,10 +196,6 @@ Esse padrão é biogeograficamente coerente: *Araucaria* e *Dicksonia* são táx
 O mapa permite identificar onde essa exposição se concentra. O padrão é mais evidente nas regiões Sul e Sudeste, especialmente em áreas atualmente classificadas como Cfb, onde a transição para Cfa é mais generalizada. Em contraste, localidades já inseridas em climas tropicais Af, Am ou Aw apresentam maior proporção de pontos com manutenção da classe climática.
 
 Esse resultado sugere a existência de um gradiente latitudinal e altitudinal de exposição às mudanças climáticas, em vez de uma resposta homogênea ao longo de toda a Mata Atlântica.
-.
-# Produtos e rastreabilidade
-
-O código salva o resumo por espécie, as transições, as análises de sensibilidade e as ocorrências com clima na pasta `resultados/`. A versão espacial é `05_ocorrencias_clima.gpkg`. O site oferece apenas as tabelas sintéticas em [Resultados](resultados.html); as entradas compactas e o código acompanham o projeto.
 
 ```{r sessao, echo=FALSE}
 sessionInfo()

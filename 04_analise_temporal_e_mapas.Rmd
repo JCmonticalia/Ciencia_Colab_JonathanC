@@ -17,8 +17,6 @@ b <- as.data.frame(z$bioma)
 
 Esta etapa acompanha a distribuição dos registros e da riqueza observada nos biomas brasileiros. A entrada deriva de `Br_01_analisis.csv`, produzida na etapa 3. Para a análise temporal, foram mantidos espécimes preservados e observações humanas com ano e bioma informados. O identificador `speciesKey` define a unidade taxonômica; valores ausentes não acrescentam uma espécie à contagem.
 
-A versão portátil contém os totais por ano e bioma, calculados a partir da matriz completa. Assim, as figuras e os modelos podem ser reproduzidos sem incluir milhões de linhas no site. O procedimento para atualizar esses totais está em `R/atualizar_dados.R`.
-
 # Distribuição entre biomas
 
 ```{r tabela-biomas}
